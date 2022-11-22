@@ -144,7 +144,7 @@
                 r: response || null,
                 id: dirID
             }
-            const qrCodeText = JSON.stringify(qrObj);
+            const qrCodeText = utf32to8(JSON.stringify(qrObj));
 
             resText.innerText = response;
             if (!response)
@@ -180,6 +180,38 @@
             pages.forEach(page => {
                 page.hidden = page.id != pageId;
             });
+        }
+
+        // Utility function from: https://github.com/neocotic/qrious/issues/62
+        function utf32to8(str) {
+            var out, i, len, c;
+            out = "";
+            len = str.length;
+            var codeAt = str.codePointAt || str.charCodeAt;    // IE 11 doesn't have codePointAt
+            for (i = 0; i < len; i++) {
+                c = codeAt.call(str, i);
+                if (c >= 0x10000) {
+                    out += String.fromCharCode(0xF0 | ((c >> 18) & 0x07));
+                    out += String.fromCharCode(0x80 | ((c >> 12) & 0x3F));
+                    out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F));
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                }
+                else if (c >= 0x0800) {
+                    out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+                    out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F));
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                }
+                else if (c >= 0x0080) {
+                    out += String.fromCharCode(0xC0 | ((c >> 6) & 0x1F));
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                }
+                else
+                    out += str.charAt(i);
+
+                if (str.charCodeAt(i) != c)
+                    i++;
+            }
+            return out;
         }
     </script>
 </body>
