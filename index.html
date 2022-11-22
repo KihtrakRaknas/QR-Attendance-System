@@ -13,75 +13,173 @@
 
 <body>
     <div class="container">
-        <!-- <h1 class="text-center my-2 display-3">Directory ID QR Code</h1> -->
-        <p class="mt-3 mb-0">
-            <span id="intro-text" class="lead">Enter your Directory ID below to generate your QR code.</span>
-            <small id="change-btn" class="text-muted ms-3 link-primary" hidden>[change]</small>
-        </p>
-        <div id="dir-form">
+        <h1 class="text-center my-2 display-3">Quiz QR Code</h1>
+
+        <div id="dir-form" class="page" hidden>
+            <p class="mt-3 mb-0">
+                <span class="lead">Enter your Directory ID below to generate your QR code.</span>
+            </p>
             <div class="form-floating my-3 form-floating">
-                <input type="email" class="form-control" id="dir-id" placeholder="~">
+                <input type="email" class="form-control" id="dir-id-input" placeholder="~" required>
                 <label for="floatingInput">Directory ID</label>
             </div>
             <div class="d-grid gap-2">
-                <button id="generate-btn" class="btn btn-success btn-lg" type="button" disabled>Generate</button>
+                <button id="save-btn" class="btn btn-info btn-lg" type="button" disabled>Save</button>
+            </div>
+        </div>
+
+        <div id="post-dir" class="page" hidden>
+            <p class="mt-3 mb-0">
+                <span class="lead">Directory ID: <span id="dir-id-text"></span></span>
+                <small id="change-btn" class="text-muted ml-2 link-danger">[change]</small>
+            </p>
+            <div id="res-form" class="sub-page">
+                <div class="form-floating my-3">
+                    <textarea class="form-control" placeholder="~" id="res-input"
+                        style="min-height: 100px; resize: none;"></textarea>
+                    <label for="res-input" class="text-muted">Response (Optional)</label>
+                </div>
+                <div class="d-grid gap-2">
+                    <button id="generate-btn" class="btn btn-success btn-lg" type="button">Generate</button>
+                </div>
+            </div>
+            <div id="qr-display" class="sub-page" hidden>
+                <p class="mt-0 mb-0">
+                    <small id="res-label" class="m-0 p-0 lead">Response: </small><small id="edit-btn"
+                        class="ml-2 link-primary">[edit]</small>
+                    <br>
+                <p class="m-0 p-0 text-muted" id="res-text" style="line-height:14px"></p>
+                </p>
             </div>
         </div>
         <div id="qr-container" class="d-grid">
-            <div id="qrcode" class="mx-auto my-3"></div>
+            <img id="qrcode" class="mx-auto my-3" hidden></img>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script>
-        const dirId = document.getElementById('dir-id');
+        const dirIdInput = document.getElementById('dir-id-input');
+        const saveBtn = document.getElementById('save-btn');
         const generateBtn = document.getElementById('generate-btn');
-        const introText = document.getElementById('intro-text');
         const qrcode = document.getElementById("qrcode");
         const qrContainer = document.getElementById("qr-container");
         const dirForm = document.getElementById("dir-form");
         const changeBtn = document.getElementById("change-btn");
+        const editBtn = document.getElementById("edit-btn");
+        const dirIdText = document.getElementById("dir-id-text");
+        const resInput = document.getElementById("res-input");
+        const resText = document.getElementById("res-text");
+        const resLabel = document.getElementById("res-label");
+
+        // Initial page setup
+        showPage("dir-form");
+        if (window.localStorage.getItem('dirId')) {
+            saveDirID(window.localStorage.getItem('dirId'));
+
+            let response = null;
+            if (window.localStorage.getItem('response') != null && window.localStorage.getItem('timestamp')) {
+                const timestamp = window.localStorage.getItem('timestamp');
+                // Only use saved response if it has been less than 20 minutes
+                if (new Date().getTime() - 1000 * 60 * 20 < Number(timestamp)) {
+                    response = window.localStorage.getItem('response');
+                }
+            }
+            resInput.value = response || "";
+            if (response != null)
+                showCode(response);
+        }
 
         // Toggle generate button
-        dirId.addEventListener('keyup', (e) => {
-            generateBtn.disabled = !e.target.value;
+        dirIdInput.addEventListener('keyup', (e) => {
+            saveBtn.disabled = !e.target.value;
         });
 
+        // Grow text area to fit content
+        resInput.addEventListener('keyup', (e) => {
+            resInput.style.height = 0;
+            resInput.style.height = `${resInput.scrollHeight + 2 + 20}px`;
+        });
+
+        // Handle save button
+        saveBtn.addEventListener('click', () => {
+            saveDirID(dirIdInput.value);
+        });
+
+        // Handle generate button
         generateBtn.addEventListener('click', () => {
-            showCode(dirId.value);
+            showCode(resInput.value);
         });
 
+        // Handle change directory ID button
         changeBtn.addEventListener('click', () => {
+            showPage("dir-form");
+        });
+
+        // Handle edit response button
+        editBtn.addEventListener('click', () => {
             hideCode();
         });
 
-        // Show QR code if dirID is saved
-        window.localStorage.getItem('dirId') && showCode(window.localStorage.getItem('dirId'));
+        function saveDirID(dirId) {
+            window.localStorage.setItem('dirId', dirId);
+            dirIdText.innerText = dirId;
+            showPage("post-dir");
+            showSubPage("res-form");
+        }
 
         // Delete QR code and show form
         function hideCode() {
-            introText.innerText = "Enter your Directory ID below to generate your QR code.";
-            introText.hidden = false;
-            qrcode.innerHTML = "";
-            dirForm.hidden = false;
-            changeBtn.hidden = true;
+            showSubPage("res-form");
+            qrcode.hidden = true;
         }
 
         // Create and display QR code
-        function showCode(text) {
+        function showCode(response) {
             const size = Math.min(qrContainer.offsetWidth, window.innerHeight - 50);
-            qrcode.innerHTML = "";
-            new QRCode(qrcode, {
-                text,
-                width: size,
-                height: size,
+            const dirID = window.localStorage.getItem('dirId');
+            const qrObj = {
+                r: response || null,
+                id: dirID
+            }
+            const qrCodeText = JSON.stringify(qrObj);
+
+            resText.innerText = response;
+            if (!response)
+                resLabel.innerHTML = `<i class="text-muted" >No response<i> `;
+            else
+                resLabel.innerHTML = "Response: ";
+            new QRious({
+                element: qrcode,
+                value: qrCodeText,
+                size,
+                level: 'L'
             });
-            introText.innerText = `Directory ID: ${text}`;
-            dirForm.hidden = true;
-            changeBtn.hidden = false;
-            window.localStorage.setItem('dirId', text);
+            qrcode.hidden = false;
+
+            showSubPage("qr-display");
+
+            window.localStorage.setItem('timestamp', new Date().getTime());
+            window.localStorage.setItem('response', response);
+        }
+
+        function showPage(pageId) {
+            const pages = [...document.getElementsByClassName("page")];
+            pages.forEach(page => {
+                page.hidden = page.id != pageId;
+            });
+            if (pageId != "post-dir") {
+                qrcode.hidden = true;
+            }
+        }
+
+        function showSubPage(pageId) {
+            const pages = [...document.getElementsByClassName("sub-page")];
+            pages.forEach(page => {
+                page.hidden = page.id != pageId;
+            });
         }
     </script>
 </body>
