@@ -2,8 +2,8 @@ function markAttn(input, labNumber) {
     let dirIds = JSON.parse(input)
     dirIds = dirIds.map(x => x.id)
     dirIds = [...new Set(dirIds)]
-    const gradedCol = 17 + labNumber
-    const possiblePointsRow = document.getElementsByTagName("tbody")[2].children[2]
+    const gradedCol = 3 - 1 + labNumber
+    const possiblePointsRow = document.getElementsByTagName("tbody")[2].children[1]
     const possiblePoints = possiblePointsRow.children[gradedCol - 2].innerText
     for (let row of document.getElementsByTagName("tbody")[2].children) {
         const cols = row.children
