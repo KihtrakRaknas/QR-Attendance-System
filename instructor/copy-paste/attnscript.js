@@ -1,6 +1,6 @@
 function markAttn(input, labNumber) {
     let dirIds = JSON.parse(input)
-    dirIds = dirIds.map(x => x.id)
+    dirIds = dirIds.map(x => x.id.toLowerCase())
     dirIds = [...new Set(dirIds)]
     const gradedCol = 3 - 1 + labNumber
     const possiblePointsRow = document.getElementsByTagName("tbody")[2].children[1]
@@ -16,6 +16,6 @@ function markAttn(input, labNumber) {
     if (dirIds.length == 0)
         console.log(`Success, everyone was given credit!`)
     else
-        console.log(`Failed to find ${dirIds.length} people!\n${dirIds}`)
+        console.log(`Failed to find ${dirIds.length} people!\n${dirIds.join()}`)
     return dirIds
 }
