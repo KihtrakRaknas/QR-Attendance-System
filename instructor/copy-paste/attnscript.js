@@ -1,5 +1,5 @@
 function markAttn(input, labNumber) {
-    let dirIds = JSON.parse(input)
+    let dirIds = input
     dirIds = dirIds.map(x => x.id.toLowerCase())
     dirIds = [...new Set(dirIds)]
     const gradedCol = 3 - 1 + labNumber
