@@ -2,6 +2,8 @@
 
 A completly offline digital system to track in-person attendance. 
 
+Click here to use it: [Student View](https://attn.kihtrak.com/) | [Instructor View](https://attn.kihtrak.com/instructor/)
+
 ## Finally, a real solution
 This project addresses a common problem in college classrooms: taking attendance without the risk of _attendance fruad_. 
 
